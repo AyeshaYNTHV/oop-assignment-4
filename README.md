@@ -1,7 +1,7 @@
 # oop-assignment-4
 Ayesha Arshad, Iqra Hafeez
 
-**Timetable management** **System **using:
+**Timetable management** **System**using:
 Eclipse
 MySQL
 Java
