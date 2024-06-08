@@ -1,0 +1,179 @@
+-- Create database if not exists
+CREATE DATABASE IF NOT EXISTS hope;
+USE hope;
+
+-- Create Students table
+CREATE TABLE IF NOT EXISTS Students (
+    sName VARCHAR(50) PRIMARY KEY
+);
+
+-- Create Teachers table
+CREATE TABLE IF NOT EXISTS Teachers (
+    tName VARCHAR(50) PRIMARY KEY
+);
+
+-- Create Rooms table
+CREATE TABLE IF NOT EXISTS Rooms (
+    RoomNumber VARCHAR(10) PRIMARY KEY
+);
+
+-- Create Courses table
+CREATE TABLE IF NOT EXISTS Courses (
+    CourseName VARCHAR(100) PRIMARY KEY,
+    TeacherName VARCHAR(50),
+    FOREIGN KEY (TeacherName) REFERENCES Teachers(tName)
+);
+
+-- Create StudentCourses table
+CREATE TABLE IF NOT EXISTS StudentCourses (
+    sName VARCHAR(50),
+    CourseName VARCHAR(100),
+    PRIMARY KEY (sName, CourseName),
+    FOREIGN KEY (sName) REFERENCES Students(sName),
+    FOREIGN KEY (CourseName) REFERENCES Courses(CourseName)
+);
+
+-- Create Timetables table
+CREATE TABLE IF NOT EXISTS Timetables (
+    StudentName VARCHAR(50),
+    CourseName VARCHAR(100),
+    RoomNumber VARCHAR(10),
+    ClassDay VARCHAR(10) NOT NULL,
+    StartTime VARCHAR(10) NOT NULL,
+    EndTime VARCHAR(10) NOT NULL,
+    PRIMARY KEY (StudentName, CourseName),
+    FOREIGN KEY (StudentName) REFERENCES Students(sName),
+    FOREIGN KEY (CourseName) REFERENCES Courses(CourseName),
+    FOREIGN KEY (RoomNumber) REFERENCES Rooms(RoomNumber)
+);
+
+-- Create TeacherTimetables table
+CREATE TABLE IF NOT EXISTS TeacherTimetables (
+    TeacherName VARCHAR(50),
+    CourseName VARCHAR(100),
+    RoomNumber VARCHAR(10),
+    ClassDay VARCHAR(10) NOT NULL,
+    StartTime VARCHAR(10) NOT NULL,
+    EndTime VARCHAR(10) NOT NULL,
+    PRIMARY KEY (TeacherName, CourseName),
+    FOREIGN KEY (TeacherName) REFERENCES Teachers(tName),
+    FOREIGN KEY (CourseName) REFERENCES Courses(CourseName),
+    FOREIGN KEY (RoomNumber) REFERENCES Rooms(RoomNumber)
+);
+
+-- Create CourseTimetables table
+CREATE TABLE IF NOT EXISTS CourseTimetables (
+    CourseName VARCHAR(100),
+    RoomNumber VARCHAR(10),
+    ClassDay VARCHAR(10) NOT NULL,
+    StartTime VARCHAR(10) NOT NULL,
+    EndTime VARCHAR(10) NOT NULL,
+    PRIMARY KEY (CourseName),
+    FOREIGN KEY (CourseName) REFERENCES Courses(CourseName),
+    FOREIGN KEY (RoomNumber) REFERENCES Rooms(RoomNumber)
+);
+
+-- Create RoomTimetables table
+CREATE TABLE IF NOT EXISTS RoomTimetables (
+    RoomNumber VARCHAR(10),
+    CourseName VARCHAR(100),
+    ClassDay VARCHAR(10) NOT NULL,
+    StartTime VARCHAR(10) NOT NULL,
+    EndTime VARCHAR(10) NOT NULL,
+    PRIMARY KEY (RoomNumber, ClassDay, StartTime),
+    FOREIGN KEY (RoomNumber) REFERENCES Rooms(RoomNumber),
+    FOREIGN KEY (CourseName) REFERENCES Courses(CourseName)
+);
+
+-- Insert sample data
+INSERT INTO Students (sName) VALUES
+('Ayesha'),
+('Iqra'),
+('Manahil'),
+('Yashfa'),
+('Anum');
+
+INSERT INTO Teachers (tName) VALUES
+('Sir Tamim'),
+('Sir Awais'),
+('Mam Sadaf'),
+('Sir Waleed'),
+('Mam Joddat');
+
+INSERT INTO Rooms (RoomNumber) VALUES
+('4-17'),
+('4-18'),
+('4-19'),
+('Lab1'),
+('Lab2');
+
+INSERT INTO Courses (CourseName, TeacherName) VALUES
+('OOP', 'Sir Tamim'),
+('ISE', 'Sir Awais'),
+('CP', 'Mam Sadaf'),
+('AP', 'Sir Waleed'),
+('CF', 'Mam Joddat');
+
+INSERT INTO StudentCourses (sName, CourseName) VALUES
+('Ayesha', 'OOP'),
+('Iqra', 'ISE'),
+('Manahil', 'CP'),
+('Yashfa', 'AP'),
+('Anum', 'CF');
+
+INSERT INTO Timetables (StudentName, CourseName, RoomNumber, ClassDay, StartTime, EndTime) VALUES
+('Ayesha', 'OOP', '4-17', 'Monday', '9:30', '10:30'),
+('Iqra', 'ISE', '4-18', 'Tuesday', '10:30', '12:30'),
+('Manahil', 'CP', '4-19', 'Wednesday', '9:30', '10:30'),
+('Yashfa', 'AP', 'Lab1', 'Thursday', '10:30', '11:30'),
+('Anum', 'CF', 'Lab2', 'Friday', '1:30', '2:30');
+
+-- Insert data into TeacherTimetables
+INSERT INTO TeacherTimetables (TeacherName, CourseName, RoomNumber, ClassDay, StartTime, EndTime)
+SELECT Courses.TeacherName, Timetables.CourseName, Timetables.RoomNumber, Timetables.ClassDay, Timetables.StartTime, Timetables.EndTime
+FROM Timetables
+JOIN Courses ON Timetables.CourseName = Courses.CourseName;
+
+-- Insert data into CourseTimetables
+INSERT INTO CourseTimetables (CourseName, RoomNumber, ClassDay, StartTime, EndTime)
+SELECT Timetables.CourseName, Timetables.RoomNumber, Timetables.ClassDay, Timetables.StartTime, Timetables.EndTime
+FROM Timetables;
+
+-- Insert data into RoomTimetables
+INSERT INTO RoomTimetables (RoomNumber, CourseName, ClassDay, StartTime, EndTime)
+SELECT Timetables.RoomNumber, Timetables.CourseName, Timetables.ClassDay, Timetables.StartTime, Timetables.EndTime
+FROM Timetables;
+
+-- Create index on Teachers table
+CREATE INDEX idx_teacher_name ON Teachers(tName);
+
+-- Create index on Students table
+CREATE INDEX idx_student_name ON Students(sName);
+
+-- Create index on Courses table
+CREATE INDEX idx_course_name ON Courses(CourseName);
+
+USE hope;
+ALTER TABLE Timetables
+DROP FOREIGN KEY timetables_ibfk_1;
+ALTER TABLE Timetables
+ADD CONSTRAINT timetables_ibfk_1
+FOREIGN KEY (StudentName)
+REFERENCES Students(sName)
+ON DELETE CASCADE;
+
+
+USE hope;
+ALTER TABLE RoomTimetables
+DROP FOREIGN KEY roomtimetables_ibfk_1;
+ALTER TABLE RoomTimetables
+ADD CONSTRAINT roomtimetables_ibfk_1
+FOREIGN KEY (RoomNumber)
+REFERENCES Rooms(RoomNumber)
+ON DELETE CASCADE;
+
+
+select* from Timetables;
+select* from CourseTimetables;
+select* from RoomTimetables;
+select* from TeacherTimetables
